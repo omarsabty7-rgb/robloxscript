@@ -1,188 +1,189 @@
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local UICorner = Instance.new("UICorner")
-local UIStroke = Instance.new("UIStroke")
-local UIGradient = Instance.new("UIGradient")
 local Title = Instance.new("TextLabel")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 -- Default Values
-local AimbotEnabled, Flying, SpeedEnabled, JumpEnabled, NoclipEnabled, ESPEnabled = false, false, false, false, false, false
-local WalkSpeedValue, JumpPowerValue, FlySpeedValue, SmoothnessValue = 100, 150, 100, 0.15
+local AimbotEnabled = false
+local Flying = false
+local SpeedEnabled = false
+local JumpEnabled = false
+local NoclipEnabled = false
+local ESPEnabled = false
 
--- UI Setup
+local WalkSpeedValue = 100
+local JumpPowerValue = 150
+local FlySpeedValue = 100
+local SmoothnessValue = 0.15
+
+-- Setup UI
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
-MainFrame.Name = "GalaxyMain"
+MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White for Gradient
-MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
-MainFrame.Size = UDim2.new(0, 300, 0, 550)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
+MainFrame.Size = UDim2.new(0, 280, 0, 540) 
 MainFrame.Active = true
 MainFrame.Draggable = true
 
--- Galaxy Gradient Effect
-UIGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 10, 30)), -- Deep Space
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(45, 20, 70)), -- Nebula Purple
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 15, 40)) -- Galactic Blue
-}
-UIGradient.Rotation = 45
-UIGradient.Parent = MainFrame
-
-UICorner.CornerRadius = UDim.new(0, 15)
+UICorner.CornerRadius = UDim.new(0, 10)
 UICorner.Parent = MainFrame
 
--- Neon Border
-UIStroke.Parent = MainFrame
-UIStroke.Color = Color3.fromRGB(130, 80, 255)
-UIStroke.Thickness = 2
-UIStroke.Transparency = 0.3
-
--- Title
 Title.Parent = MainFrame
-Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Title.BackgroundTransparency = 0.8
-Title.Size = UDim2.new(1, 0, 0, 45)
-Title.Text = "✧ GALAXY HUB | V7 ✧"
-Title.TextColor3 = Color3.fromRGB(200, 180, 255)
-Title.TextSize = 18
-Title.Font = Enum.Font.GothamBold
+Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Text = "ELITE HUB V7 | ESP FIXED"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.Parent = Title
 
--- Smart Toggle Function
-local function CreateControl(name, pos, defaultValue, callback)
+-- Function to create Smart Toggle Button
+local function CreateToggleButton(name, pos, callback, isFullWidth)
     local active = false
-    local btn = Instance.new("TextButton", MainFrame)
-    btn.Text = name .. ": OFF"
+    local btn = Instance.new("TextButton")
+    btn.Parent = MainFrame
+    btn.Text = name .. ": [OFF]"
     btn.Position = pos
-    btn.Size = UDim2.new(0.6, 0, 0, 38)
-    btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    btn.BackgroundTransparency = 0.9
+    btn.Size = isFullWidth and UDim2.new(0.9, 0, 0, 35) or UDim2.new(0.6, 0, 0, 35)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.GothamBold
+    btn.Font = Enum.Font.SourceSansBold
     btn.TextSize = 11
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-    local s = Instance.new("UIStroke", btn)
-    s.Color = Color3.fromRGB(255, 255, 255)
-    s.Transparency = 0.8
-
-    local input = Instance.new("TextBox", MainFrame)
-    input.Text = tostring(defaultValue)
-    input.Position = UDim2.new(pos.X.Scale + 0.65, 0, pos.Y.Scale, 0)
-    input.Size = UDim2.new(0.25, 0, 0, 38)
-    input.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    input.BackgroundTransparency = 0.6
-    input.TextColor3 = Color3.fromRGB(180, 150, 255)
-    input.Font = Enum.Font.Code
-    input.TextSize = 14
-    Instance.new("UICorner", input)
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = btn
 
     btn.MouseButton1Click:Connect(function()
         active = not active
-        btn.Text = active and name .. ": ON" or name .. ": OFF"
-        btn.TextColor3 = active and Color3.fromRGB(0, 255, 180) or Color3.fromRGB(255, 255, 255)
-        s.Color = active and Color3.fromRGB(0, 255, 180) or Color3.fromRGB(255, 255, 255)
-        callback("toggle", active)
+        btn.Text = active and name .. ": [ON]" or name .. ": [OFF]"
+        btn.BackgroundColor3 = active and Color3.fromRGB(0, 100, 0) or Color3.fromRGB(45, 45, 45)
+        callback(active)
     end)
-    input.FocusLost:Connect(function() callback("value", tonumber(input.Text)) end)
+    return btn
 end
 
--- ESP Button Logic
-local function CreateESPBtn(pos)
-    local btn = Instance.new("TextButton", MainFrame)
-    btn.Text = "GALAXY ESP: OFF"
-    btn.Position = pos
-    btn.Size = UDim2.new(0.9, 0, 0, 40)
-    btn.BackgroundColor3 = Color3.fromRGB(100, 50, 200)
-    btn.BackgroundTransparency = 0.7
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.GothamBold
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-    
-    btn.MouseButton1Click:Connect(function()
-        ESPEnabled = not ESPEnabled
-        btn.Text = ESPEnabled and "GALAXY ESP: ON" or "GALAXY ESP: OFF"
-        btn.BackgroundColor3 = ESPEnabled and Color3.fromRGB(0, 200, 150) or Color3.fromRGB(100, 50, 200)
-    end)
+-- Function to create TextBox for values
+local function CreateValueInput(pos, defaultValue, callback)
+    local input = Instance.new("TextBox")
+    input.Parent = MainFrame
+    input.Text = tostring(defaultValue)
+    input.Position = pos
+    input.Size = UDim2.new(0.2, 0, 0, 35)
+    input.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    input.TextColor3 = Color3.fromRGB(0, 255, 0)
+    input.Font = Enum.Font.SourceSansBold
+    input.TextSize = 14
+    local inputCorner = Instance.new("UICorner")
+    inputCorner.Parent = input
+    input.FocusLost:Connect(function() callback(tonumber(input.Text)) end)
 end
 
--- Runtime Loops
+-- ESP Logic (Continuous Update)
 RunService.Stepped:Connect(function()
     for _, player in pairs(game.Players:GetPlayers()) do
         if player ~= game.Players.LocalPlayer and player.Character then
-            local h = player.Character:FindFirstChild("G-ESP")
+            local highlight = player.Character:FindFirstChild("ESPHighlight")
             if ESPEnabled then
-                if not h then h = Instance.new("Highlight", player.Character); h.Name = "G-ESP" end
-                h.FillColor = (player.Team == game.Players.LocalPlayer.Team) and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(255, 0, 150)
-            elseif h then h:Destroy() end
+                if not highlight then
+                    highlight = Instance.new("Highlight")
+                    highlight.Name = "ESPHighlight"
+                    highlight.Parent = player.Character
+                end
+                highlight.FillColor = (player.Team == game.Players.LocalPlayer.Team) and Color3.fromRGB(0, 0, 255) or Color3.fromRGB(255, 0, 0)
+            else
+                if highlight then highlight:Destroy() end
+            end
         end
     end
 end)
 
+-- Heartbeat Loop for Speed/Jump/Noclip
 RunService.Heartbeat:Connect(function()
     local char = game.Players.LocalPlayer.Character
     if char and char:FindFirstChild("Humanoid") then
         if SpeedEnabled then char.Humanoid.WalkSpeed = WalkSpeedValue end
         if JumpEnabled then char.Humanoid.JumpPower = JumpPowerValue char.Humanoid.UseJumpPower = true end
         if NoclipEnabled then
-            for _, p in pairs(char:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+            for _, part in pairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then part.CanCollide = false end
+            end
         end
     end
 end)
 
--- Initialize Controls
-CreateControl("SPEED", UDim2.new(0.05, 0, 0.12, 0), WalkSpeedValue, function(t, v) if t == "toggle" then SpeedEnabled = v else WalkSpeedValue = v end end)
-CreateControl("JUMP", UDim2.new(0.05, 0, 0.22, 0), JumpPowerValue, function(t, v) if t == "toggle" then JumpEnabled = v else JumpPowerValue = v end end)
-CreateControl("FLY", UDim2.new(0.05, 0, 0.32, 0), FlySpeedValue, function(t, v)
-    if t == "toggle" then
-        Flying = v; NoclipEnabled = v; local root = game.Players.LocalPlayer.Character.HumanoidRootPart
-        if Flying then
-            local bv = Instance.new("BodyVelocity", root); bv.Name = "G-Fly"; bv.MaxForce = Vector3.new(1,1,1)*math.huge
-            task.spawn(function()
-                while Flying do
-                    local cam = workspace.CurrentCamera.CFrame; local v3 = Vector3.new(0,0,0)
-                    if UserInputService:IsKeyDown("W") then v3 = v3 + cam.LookVector end
-                    if UserInputService:IsKeyDown("S") then v3 = v3 - cam.LookVector end
-                    if UserInputService:IsKeyDown("D") then v3 = v3 + cam.RightVector end
-                    if UserInputService:IsKeyDown("A") then v3 = v3 - cam.RightVector end
-                    if UserInputService:IsKeyDown("Space") then v3 = v3 + Vector3.new(0,1,0) end
-                    if UserInputService:IsKeyDown("LeftShift") then v3 = v3 - Vector3.new(0,1,0) end
-                    bv.Velocity = v3 * FlySpeedValue; task.wait()
-                end
-                bv:Destroy()
-            end)
-        end
-    else FlySpeedValue = v end
+-- Creating Controls
+CreateToggleButton("SPEED", UDim2.new(0.05, 0, 0.12, 0), function(state) SpeedEnabled = state end)
+CreateValueInput(UDim2.new(0.7, 0, 0.12, 0), WalkSpeedValue, function(val) WalkSpeedSpeedValue = val end)
+
+CreateToggleButton("JUMP", UDim2.new(0.05, 0, 0.22, 0), function(state) JumpEnabled = state end)
+CreateValueInput(UDim2.new(0.7, 0, 0.22, 0), JumpPowerValue, function(val) JumpPowerValue = val end)
+
+CreateToggleButton("FLY", UDim2.new(0.05, 0, 0.32, 0), function(state)
+    Flying = state
+    NoclipEnabled = state
+    local char = game.Players.LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if Flying and root then
+        local bv = Instance.new("BodyVelocity", root)
+        bv.Name = "FlyVel"
+        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        task.spawn(function()
+            while Flying do
+                local cam = workspace.CurrentCamera.CFrame
+                local newVel = Vector3.new(0, 0, 0)
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then newVel = newVel + cam.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then newVel = newVel - cam.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then newVel = newVel + cam.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then newVel = newVel - cam.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.Space) then newVel = newVel + Vector3.new(0, 1, 0) end
+                if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then newVel = newVel - Vector3.new(0, 1, 0) end
+                bv.Velocity = newVel * FlySpeedValue
+                task.wait()
+            end
+            if bv then bv:Destroy() end
+        end)
+    end
 end)
-CreateControl("AIM", UDim2.new(0.05, 0, 0.42, 0), SmoothnessValue, function(t, v) if t == "toggle" then AimbotEnabled = v else SmoothnessValue = v end end)
-CreateESPBtn(UDim2.new(0.05, 0, 0.52, 0))
+CreateValueInput(UDim2.new(0.7, 0, 0.32, 0), FlySpeedValue, function(val) FlySpeedValue = val end)
 
--- Close Button
-local c = Instance.new("TextButton", MainFrame)
-c.Text = "EXIT GALAXY"
-c.Size = UDim2.new(0.9, 0, 0, 40)
-c.Position = UDim2.new(0.05, 0, 0.88, 0)
-c.BackgroundColor3 = Color3.fromRGB(200, 0, 50)
-c.TextColor3 = Color3.fromRGB(255, 255, 255)
-c.Font = Enum.Font.GothamBold
-Instance.new("UICorner", c)
-c.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+CreateToggleButton("AIMBOT", UDim2.new(0.05, 0, 0.42, 0), function(state) AimbotEnabled = state end)
+CreateValueInput(UDim2.new(0.7, 0, 0.42, 0), SmoothnessValue, function(val) SmoothnessValue = val end)
 
--- Smooth Aimbot Loop
+-- ESP Toggle (Now works with ON/OFF colors)
+CreateToggleButton("SMART ESP", UDim2.new(0.05, 0, 0.52, 0), function(state) ESPEnabled = state end, true)
+
+-- Aimbot Loop
 RunService.RenderStepped:Connect(function()
     if AimbotEnabled then
-        local target = nil; local dist = 1000; local myTeam = game.Players.LocalPlayer.Team
+        local target = nil
+        local dist = 1000
+        local myTeam = game.Players.LocalPlayer.Team
         for _, p in pairs(game.Players:GetPlayers()) do
             if p ~= game.Players.LocalPlayer and p.Team ~= myTeam and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
                 local d = (p.Character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-                if d < dist then target = p; dist = d end
+                if d < dist then target = p dist = d end
             end
         end
         if target then
             local cam = workspace.CurrentCamera
-            cam.CFrame = cam.CFrame:Lerp(CFrame.new(cam.CFrame.Position, target.Character.HumanoidRootPart.Position), SmoothnessValue)
+            local targetPos = CFrame.new(cam.CFrame.Position, target.Character.HumanoidRootPart.Position)
+            cam.CFrame = cam.CFrame:Lerp(targetPos, SmoothnessValue)
         end
     end
 end)
+
+-- Close Button
+local close = Instance.new("TextButton", MainFrame)
+close.Text = "CLOSE HUB"
+close.Size = UDim2.new(0.9, 0, 0, 40)
+close.Position = UDim2.new(0.05, 0, 0.88, 0)
+close.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+close.TextColor3 = Color3.fromRGB(255, 255, 255)
+close.Font = Enum.Font.SourceSansBold
+local cCorner = Instance.new("UICorner", close)
+close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
