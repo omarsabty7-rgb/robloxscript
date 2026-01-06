@@ -1,0 +1,46 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Elite Hub | V1",
+   LoadingTitle = "Loading Elite Hub...",
+   LoadingSubtitle = "by YourName",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "EliteHubConfig",
+      FileName = "EliteHub"
+   }
+})
+
+local Tab = Window:CreateTab("Main Hacks", 4483362458) -- Icon ID
+
+local Slider = Tab:CreateSlider({
+   Name = "WalkSpeed",
+   Range = {16, 500},
+   Increment = 1,
+   Suffix = "Speed",
+   CurrentValue = 16,
+   Flag = "Slider1",
+   Callback = function(Value)
+      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+   end,
+})
+
+local Button = Tab:CreateButton({
+   Name = "Enable ESP",
+   Callback = function()
+      for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+         if player ~= game:GetService("Players").LocalPlayer and player.Character then
+            local highlight = Instance.new("Highlight")
+            highlight.Parent = player.Character
+            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+         end
+      end
+   end,
+})
+
+Rayfield:Notify({
+   Title = "Success!",
+   Content = "Elite Hub Loaded Successfully",
+   Duration = 5,
+   Image = 4483362458,
+})
