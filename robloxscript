@@ -3,18 +3,24 @@ local MainFrame = Instance.new("Frame")
 local UICorner = Instance.new("UICorner")
 local Title = Instance.new("TextLabel")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Variables
 local AimbotEnabled = false
 local Flying = false
+local SpeedEnabled = false
+local JumpEnabled = false
+local NoclipEnabled = false
 
--- Main Setup
+-- Setup
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
-MainFrame.Size = UDim2.new(0, 225, 0, 430) 
+MainFrame.Size = UDim2.new(0, 225, 0, 480)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
@@ -22,25 +28,24 @@ UICorner.CornerRadius = UDim.new(0, 10)
 UICorner.Parent = MainFrame
 
 Title.Parent = MainFrame
-Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Text = "ELITE HUB | V1"
+Title.Text = "ELITE HUB V3 | PRO"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 18
 local TitleCorner = Instance.new("UICorner")
 TitleCorner.Parent = Title
 
--- Button Creation Function
 local function CreateButton(text, pos, color, callback)
     local btn = Instance.new("TextButton")
     btn.Parent = MainFrame
     btn.Text = text
     btn.Position = pos
-    btn.Size = UDim2.new(0.8, 0, 0, 35)
+    btn.Size = UDim2.new(0.85, 0, 0, 35)
     btn.BackgroundColor3 = color
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.SourceSansBold
-    btn.TextSize = 16
+    btn.TextSize = 14
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 6)
     btnCorner.Parent = btn
@@ -48,80 +53,94 @@ local function CreateButton(text, pos, color, callback)
     return btn
 end
 
--- Closest Player Logic
-local function getClosestPlayer()
-    local closest = nil
-    local shortestDistance = math.huge
-    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-        if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local pos = workspace.CurrentCamera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
-            local magnitude = (Vector2.new(pos.X, pos.Y) - Vector2.new(workspace.CurrentCamera.ViewportSize.X/2, workspace.CurrentCamera.ViewportSize.Y/2)).Magnitude
-            if magnitude < shortestDistance then
-                closest = player
-                shortestDistance = magnitude
+-- Speed & Jump Loops
+RunService.Heartbeat:Connect(function()
+    local char = game.Players.LocalPlayer.Character
+    if char and char:FindFirstChild("Humanoid") then
+        if SpeedEnabled then char.Humanoid.WalkSpeed = 100 end
+        if JumpEnabled then char.Humanoid.JumpPower = 150 char.Humanoid.UseJumpPower = true end
+        if NoclipEnabled then
+            for _, part in pairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then part.CanCollide = false end
             end
         end
     end
-    return closest
-end
-
--- UI Buttons
-CreateButton("Super Speed", UDim2.new(0.1, 0, 0.15, 0), Color3.fromRGB(45, 45, 45), function()
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100
 end)
 
-CreateButton("High Jump", UDim2.new(0.1, 0, 0.27, 0), Color3.fromRGB(45, 45, 45), function()
-    game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100
+CreateButton("Super Speed: TOGGLE", UDim2.new(0.07, 0, 0.1, 0), Color3.fromRGB(45, 45, 45), function()
+    SpeedEnabled = not SpeedEnabled
 end)
 
-CreateButton("Enable ESP", UDim2.new(0.1, 0, 0.39, 0), Color3.fromRGB(45, 45, 45), function()
-    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+CreateButton("High Jump: TOGGLE", UDim2.new(0.07, 0, 0.2, 0), Color3.fromRGB(45, 45, 45), function()
+    JumpEnabled = not JumpEnabled
+end)
+
+CreateButton("Smart ESP (Team/Enemy)", UDim2.new(0.07, 0, 0.3, 0), Color3.fromRGB(45, 45, 45), function()
+    for _, player in pairs(game.Players:GetPlayers()) do
         if player ~= game.Players.LocalPlayer and player.Character then
             local highlight = Instance.new("Highlight")
             highlight.Parent = player.Character
-            highlight.FillColor = Color3.fromRGB(255, 0, 0)
-        end
-    end
-end)
-
-CreateButton("Ghost Mode", UDim2.new(0.1, 0, 0.51, 0), Color3.fromRGB(45, 45, 45), function()
-    for _, v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
-        if v:IsA("BasePart") then v.Transparency = 0.5 end
-    end
-end)
-
-CreateButton("Lock-On Aimbot", UDim2.new(0.1, 0, 0.63, 0), Color3.fromRGB(60, 20, 20), function()
-    AimbotEnabled = not AimbotEnabled
-end)
-
-CreateButton("Fly Mode", UDim2.new(0.1, 0, 0.74, 0), Color3.fromRGB(45, 45, 45), function()
-    Flying = not Flying
-    local char = game.Players.LocalPlayer.Character
-    if Flying and char and char:FindFirstChild("HumanoidRootPart") then
-        local bv = Instance.new("BodyVelocity")
-        bv.Name = "FlyVelocity"
-        bv.Parent = char.HumanoidRootPart
-        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-        bv.Velocity = Vector3.new(0, 50, 0)
-    else
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            for _, v in pairs(char.HumanoidRootPart:GetChildren()) do
-                if v.Name == "FlyVelocity" then v:Destroy() end
+            if player.Team == game.Players.LocalPlayer.Team then
+                highlight.FillColor = Color3.fromRGB(0, 0, 255)
+            else
+                highlight.FillColor = Color3.fromRGB(255, 0, 0)
             end
         end
     end
 end)
 
-CreateButton("CLOSE HUB", UDim2.new(0.1, 0, 0.85, 0), Color3.fromRGB(150, 0, 0), function()
-    ScreenGui:Destroy()
+-- Advanced Flight with Keys
+CreateButton("Advanced Flight & Noclip", UDim2.new(0.07, 0, 0.4, 0), Color3.fromRGB(45, 45, 45), function()
+    Flying = not Flying
+    NoclipEnabled = Flying
+    local char = game.Players.LocalPlayer.Character
+    local root = char:FindFirstChild("HumanoidRootPart")
+    
+    if Flying then
+        local bv = Instance.new("BodyVelocity", root)
+        bv.Name = "FlyVel"
+        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        bv.Velocity = Vector3.new(0, 0, 0)
+        
+        task.spawn(function()
+            while Flying do
+                local cam = workspace.CurrentCamera.CFrame
+                local newVel = Vector3.new(0, 0, 0)
+                
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then newVel = newVel + cam.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then newVel = newVel - cam.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then newVel = newVel + cam.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then newVel = newVel - cam.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.Space) then newVel = newVel + Vector3.new(0, 1, 0) end
+                if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then newVel = newVel - Vector3.new(0, 1, 0) end
+                
+                bv.Velocity = newVel * 100
+                task.wait()
+            end
+            bv:Destroy()
+        end)
+    end
 end)
 
--- Runtime Loops
+CreateButton("Aimbot: TOGGLE", UDim2.new(0.07, 0, 0.5, 0), Color3.fromRGB(60, 20, 20), function()
+    AimbotEnabled = not AimbotEnabled
+end)
+
+-- Aimbot Loop
 RunService.RenderStepped:Connect(function()
     if AimbotEnabled then
-        local target = getClosestPlayer()
-        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-            workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, target.Character.HumanoidRootPart.Position)
+        local target = nil
+        local dist = 1000
+        for _, p in pairs(game.Players:GetPlayers()) do
+            if p ~= game.Players.LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local d = (p.Character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                if d < dist then target = p dist = d end
+            end
         end
+        if target then workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, target.Character.HumanoidRootPart.Position) end
     end
+end)
+
+CreateButton("CLOSE HUB", UDim2.new(0.07, 0, 0.88, 0), Color3.fromRGB(150, 0, 0), function()
+    ScreenGui:Destroy()
 end)
