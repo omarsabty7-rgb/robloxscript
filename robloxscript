@@ -5,7 +5,7 @@ local Title = Instance.new("TextLabel")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
--- Default Values (يمكنك تغييرها من اللعبة)
+-- Default Values
 local AimbotEnabled = false
 local Flying = false
 local SpeedEnabled = false
@@ -15,7 +15,7 @@ local NoclipEnabled = false
 local WalkSpeedValue = 100
 local JumpPowerValue = 150
 local FlySpeedValue = 100
-local SmoothnessValue = 0.15
+local SmoothnessValue = 1
 
 -- Setup UI
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -25,7 +25,7 @@ MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
-MainFrame.Size = UDim2.new(0, 280, 0, 520) -- كبّرنا العرض قليلاً لتسع الصناديق
+MainFrame.Size = UDim2.new(0, 280, 0, 540) 
 MainFrame.Active = true
 MainFrame.Draggable = true
 
@@ -35,29 +35,29 @@ UICorner.Parent = MainFrame
 Title.Parent = MainFrame
 Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Text = "ELITE HUB V5 | FULL CONTROL"
+Title.Text = "ELITE HUB V6 | TOGGLE MODE"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 16
 local TitleCorner = Instance.new("UICorner")
 TitleCorner.Parent = Title
 
--- وظيفة إنشاء "زر مع صندوق إدخال"
-local function CreateControl(text, pos, defaultValue, callback)
-    -- الزر الرئيسي للتفعيل
+-- Function to create Smart Toggle Button + TextBox
+local function CreateControl(name, pos, defaultValue, callback)
+    local active = false
+    
     local btn = Instance.new("TextButton")
     btn.Parent = MainFrame
-    btn.Text = text
+    btn.Text = name .. ": [OFF]"
     btn.Position = pos
     btn.Size = UDim2.new(0.6, 0, 0, 35)
     btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.SourceSansBold
-    btn.TextSize = 12
+    btn.TextSize = 11
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 6)
     btnCorner.Parent = btn
     
-    -- صندوق إدخال الرقم
     local input = Instance.new("TextBox")
     input.Parent = MainFrame
     input.Text = tostring(defaultValue)
@@ -70,11 +70,41 @@ local function CreateControl(text, pos, defaultValue, callback)
     local inputCorner = Instance.new("UICorner")
     inputCorner.Parent = input
 
-    btn.MouseButton1Click:Connect(function() callback("toggle") end)
-    input.FocusLost:Connect(function() callback("value", tonumber(input.Text)) end)
+    btn.MouseButton1Click:Connect(function()
+        active = not active
+        if active then
+            btn.Text = name .. ": [ON]"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 100, 0) -- Green
+        else
+            btn.Text = name .. ": [OFF]"
+            btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45) -- Gray
+        end
+        callback("toggle", active)
+    end)
+    
+    input.FocusLost:Connect(function()
+        callback("value", tonumber(input.Text))
+    end)
 end
 
--- Loops
+-- Normal Button Function
+local function CreateNormalButton(text, pos, color, callback)
+    local btn = Instance.new("TextButton")
+    btn.Parent = MainFrame
+    btn.Text = text
+    btn.Position = pos
+    btn.Size = UDim2.new(0.9, 0, 0, 35)
+    btn.BackgroundColor3 = color
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 12
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = btn
+    btn.MouseButton1Click:Connect(callback)
+end
+
+-- Heartbeat Loop
 RunService.Heartbeat:Connect(function()
     local char = game.Players.LocalPlayer.Character
     if char and char:FindFirstChild("Humanoid") then
@@ -88,19 +118,19 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Creating Controls
-CreateControl("Speed: ON/OFF", UDim2.new(0.05, 0, 0.12, 0), WalkSpeedValue, function(type, val)
-    if type == "toggle" then SpeedEnabled = not SpeedEnabled else WalkSpeedValue = val end
+-- Creating Controls with ON/OFF Logic
+CreateControl("SPEED", UDim2.new(0.05, 0, 0.12, 0), WalkSpeedValue, function(type, val)
+    if type == "toggle" then SpeedEnabled = val else WalkSpeedValue = val end
 end)
 
-CreateControl("Jump: ON/OFF", UDim2.new(0.05, 0, 0.22, 0), JumpPowerValue, function(type, val)
-    if type == "toggle" then JumpEnabled = not JumpEnabled else JumpPowerValue = val end
+CreateControl("JUMP", UDim2.new(0.05, 0, 0.22, 0), JumpPowerValue, function(type, val)
+    if type == "toggle" then JumpEnabled = val else JumpPowerValue = val end
 end)
 
-CreateControl("Fly: ON/OFF", UDim2.new(0.05, 0, 0.32, 0), FlySpeedValue, function(type, val)
+CreateControl("FLY", UDim2.new(0.05, 0, 0.32, 0), FlySpeedValue, function(type, val)
     if type == "toggle" then 
-        Flying = not Flying
-        NoclipEnabled = Flying
+        Flying = val
+        NoclipEnabled = val
         local char = game.Players.LocalPlayer.Character
         local root = char:FindFirstChild("HumanoidRootPart")
         if Flying then
@@ -120,17 +150,32 @@ CreateControl("Fly: ON/OFF", UDim2.new(0.05, 0, 0.32, 0), FlySpeedValue, functio
                     bv.Velocity = newVel * FlySpeedValue
                     task.wait()
                 end
-                bv:Destroy()
+                if bv then bv:Destroy() end
             end)
         end
     else FlySpeedValue = val end
 end)
 
-CreateControl("Aimbot Smooth", UDim2.new(0.05, 0, 0.42, 0), SmoothnessValue, function(type, val)
-    if type == "toggle" then AimbotEnabled = not AimbotEnabled else SmoothnessValue = val end
+CreateControl("AIMBOT", UDim2.new(0.05, 0, 0.42, 0), SmoothnessValue, function(type, val)
+    if type == "toggle" then AimbotEnabled = val else SmoothnessValue = val end
 end)
 
--- Aimbot Loop
+-- ESP Button
+CreateNormalButton("SMART ESP (TEAM CHECK)", UDim2.new(0.05, 0, 0.52, 0), Color3.fromRGB(45, 45, 45), function()
+    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+        if player ~= game.Players.LocalPlayer and player.Character then
+            local highlight = Instance.new("Highlight")
+            highlight.Parent = player.Character
+            if player.Team == game.Players.LocalPlayer.Team then
+                highlight.FillColor = Color3.fromRGB(0, 0, 255)
+            else
+                highlight.FillColor = Color3.fromRGB(255, 0, 0)
+            end
+        end
+    end
+end)
+
+-- Aimbot Logic
 RunService.RenderStepped:Connect(function()
     if AimbotEnabled then
         local target = nil
@@ -151,12 +196,6 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- Close Button
-local close = Instance.new("TextButton", MainFrame)
-close.Text = "CLOSE HUB"
-close.Size = UDim2.new(0.9, 0, 0, 40)
-close.Position = UDim2.new(0.05, 0, 0.88, 0)
-close.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-close.TextColor3 = Color3.fromRGB(255, 255, 255)
-close.Font = Enum.Font.SourceSansBold
-local cCorner = Instance.new("UICorner", close)
-close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+CreateNormalButton("CLOSE HUB", UDim2.new(0.05, 0, 0.88, 0), Color3.fromRGB(150, 0, 0), function()
+    ScreenGui:Destroy()
+end)
