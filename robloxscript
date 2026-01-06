@@ -1,46 +1,57 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Simple Manual UI for Xeno
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local SpeedBtn = Instance.new("TextButton")
+local JumpBtn = Instance.new("TextButton")
+local ESPBtn = Instance.new("TextButton")
 
-local Window = Rayfield:CreateWindow({
-   Name = "Elite Hub | V1",
-   LoadingTitle = "Loading Elite Hub...",
-   LoadingSubtitle = "by YourName",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "EliteHubConfig",
-      FileName = "EliteHub"
-   }
-})
+-- Setup UI
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-local Tab = Window:CreateTab("Main Hacks", 4483362458) -- Icon ID
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
+MainFrame.Size = UDim2.new(0, 200, 0, 250)
+MainFrame.Active = true
+MainFrame.Draggable = true -- يمكنك تحريك الواجهة بالماوس
 
-local Slider = Tab:CreateSlider({
-   Name = "WalkSpeed",
-   Range = {16, 500},
-   Increment = 1,
-   Suffix = "Speed",
-   CurrentValue = 16,
-   Flag = "Slider1",
-   Callback = function(Value)
-      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-   end,
-})
+Title.Parent = MainFrame
+Title.Text = "ELITE HUB V1"
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-local Button = Tab:CreateButton({
-   Name = "Enable ESP",
-   Callback = function()
-      for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-         if player ~= game:GetService("Players").LocalPlayer and player.Character then
+-- Speed Button
+SpeedBtn.Parent = MainFrame
+SpeedBtn.Text = "Super Speed"
+SpeedBtn.Position = UDim2.new(0.1, 0, 0.25, 0)
+SpeedBtn.Size = UDim2.new(0.8, 0, 0, 40)
+SpeedBtn.MouseButton1Click:Connect(function()
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100
+end)
+
+-- Jump Button
+JumpBtn.Parent = MainFrame
+JumpBtn.Text = "High Jump"
+JumpBtn.Position = UDim2.new(0.1, 0, 0.45, 0)
+JumpBtn.Size = UDim2.new(0.8, 0, 0, 40)
+JumpBtn.MouseButton1Click:Connect(function()
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100
+end)
+
+-- ESP Button
+ESPBtn.Parent = MainFrame
+ESPBtn.Text = "Enable ESP"
+ESPBtn.Position = UDim2.new(0.1, 0, 0.65, 0)
+ESPBtn.Size = UDim2.new(0.8, 0, 0, 40)
+ESPBtn.MouseButton1Click:Connect(function()
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer and player.Character then
             local highlight = Instance.new("Highlight")
             highlight.Parent = player.Character
             highlight.FillColor = Color3.fromRGB(255, 0, 0)
-         end
-      end
-   end,
-})
-
-Rayfield:Notify({
-   Title = "Success!",
-   Content = "Elite Hub Loaded Successfully",
-   Duration = 5,
-   Image = 4483362458,
-})
+        end
+    end
+end)
