@@ -1,61 +1,127 @@
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
 local Title = Instance.new("TextLabel")
-local SpeedBtn = Instance.new("TextButton")
-local JumpBtn = Instance.new("TextButton")
-local ESPBtn = Instance.new("TextButton")
+local RunService = game:GetService("RunService")
+local AimbotEnabled = false
+local Flying = false
 
+-- Main Setup
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-MainFrame.BorderSizePixel = 0
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
-MainFrame.Size = UDim2.new(0, 200, 0, 220)
+MainFrame.Size = UDim2.new(0, 225, 0, 430) 
 MainFrame.Active = true
 MainFrame.Draggable = true
 
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
+
 Title.Parent = MainFrame
-Title.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Text = "ELITE HUB V1"
+Title.Text = "ELITE HUB | V1"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 18
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.Parent = Title
 
-SpeedBtn.Parent = MainFrame
-SpeedBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-SpeedBtn.Position = UDim2.new(0.1, 0, 0.25, 0)
-SpeedBtn.Size = UDim2.new(0.8, 0, 0, 35)
-SpeedBtn.Text = "Super Speed"
-SpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedBtn.MouseButton1Click:Connect(function()
+-- Button Creation Function
+local function CreateButton(text, pos, color, callback)
+    local btn = Instance.new("TextButton")
+    btn.Parent = MainFrame
+    btn.Text = text
+    btn.Position = pos
+    btn.Size = UDim2.new(0.8, 0, 0, 35)
+    btn.BackgroundColor3 = color
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 16
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = btn
+    btn.MouseButton1Click:Connect(callback)
+    return btn
+end
+
+-- Closest Player Logic
+local function getClosestPlayer()
+    local closest = nil
+    local shortestDistance = math.huge
+    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+        if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local pos = workspace.CurrentCamera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
+            local magnitude = (Vector2.new(pos.X, pos.Y) - Vector2.new(workspace.CurrentCamera.ViewportSize.X/2, workspace.CurrentCamera.ViewportSize.Y/2)).Magnitude
+            if magnitude < shortestDistance then
+                closest = player
+                shortestDistance = magnitude
+            end
+        end
+    end
+    return closest
+end
+
+-- UI Buttons
+CreateButton("Super Speed", UDim2.new(0.1, 0, 0.15, 0), Color3.fromRGB(45, 45, 45), function()
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100
 end)
 
-JumpBtn.Parent = MainFrame
-JumpBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-JumpBtn.Position = UDim2.new(0.1, 0, 0.45, 0)
-JumpBtn.Size = UDim2.new(0.8, 0, 0, 35)
-JumpBtn.Text = "High Jump"
-JumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-JumpBtn.MouseButton1Click:Connect(function()
+CreateButton("High Jump", UDim2.new(0.1, 0, 0.27, 0), Color3.fromRGB(45, 45, 45), function()
     game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100
 end)
 
-ESPBtn.Parent = MainFrame
-ESPBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-ESPBtn.Position = UDim2.new(0.1, 0, 0.65, 0)
-ESPBtn.Size = UDim2.new(0.8, 0, 0, 35)
-ESPBtn.Text = "Enable ESP"
-ESPBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ESPBtn.MouseButton1Click:Connect(function()
-    for _, player in pairs(game.Players:GetPlayers()) do
+CreateButton("Enable ESP", UDim2.new(0.1, 0, 0.39, 0), Color3.fromRGB(45, 45, 45), function()
+    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
         if player ~= game.Players.LocalPlayer and player.Character then
             local highlight = Instance.new("Highlight")
             highlight.Parent = player.Character
             highlight.FillColor = Color3.fromRGB(255, 0, 0)
+        end
+    end
+end)
+
+CreateButton("Ghost Mode", UDim2.new(0.1, 0, 0.51, 0), Color3.fromRGB(45, 45, 45), function()
+    for _, v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+        if v:IsA("BasePart") then v.Transparency = 0.5 end
+    end
+end)
+
+CreateButton("Lock-On Aimbot", UDim2.new(0.1, 0, 0.63, 0), Color3.fromRGB(60, 20, 20), function()
+    AimbotEnabled = not AimbotEnabled
+end)
+
+CreateButton("Fly Mode", UDim2.new(0.1, 0, 0.74, 0), Color3.fromRGB(45, 45, 45), function()
+    Flying = not Flying
+    local char = game.Players.LocalPlayer.Character
+    if Flying and char and char:FindFirstChild("HumanoidRootPart") then
+        local bv = Instance.new("BodyVelocity")
+        bv.Name = "FlyVelocity"
+        bv.Parent = char.HumanoidRootPart
+        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        bv.Velocity = Vector3.new(0, 50, 0)
+    else
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            for _, v in pairs(char.HumanoidRootPart:GetChildren()) do
+                if v.Name == "FlyVelocity" then v:Destroy() end
+            end
+        end
+    end
+end)
+
+CreateButton("CLOSE HUB", UDim2.new(0.1, 0, 0.85, 0), Color3.fromRGB(150, 0, 0), function()
+    ScreenGui:Destroy()
+end)
+
+-- Runtime Loops
+RunService.RenderStepped:Connect(function()
+    if AimbotEnabled then
+        local target = getClosestPlayer()
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, target.Character.HumanoidRootPart.Position)
         end
     end
 end)
