@@ -16,7 +16,7 @@ local ESPEnabled = false
 local WalkSpeedValue = 100
 local JumpPowerValue = 150
 local FlySpeedValue = 100
-local SmoothnessValue = 0.15
+local SmoothnessValue = 1
 
 -- Setup UI
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
