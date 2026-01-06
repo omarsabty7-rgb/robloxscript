@@ -15,7 +15,7 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
 MainFrame.Size = UDim2.new(0, 200, 0, 250)
 MainFrame.Active = true
-MainFrame.Draggable = true -- يمكنك تحريك الواجهة بالماوس
+MainFrame.Draggable = true
 
 Title.Parent = MainFrame
 Title.Text = "ELITE HUB V1"
