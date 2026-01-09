@@ -14,7 +14,7 @@ local NoclipEnabled = false
 local ESPEnabled = false
 
 local WalkSpeedValue = 100
-local JumpPowerValue = 150
+local JumpPowerValue = 100
 local FlySpeedValue = 100
 local SmoothnessValue = 1
 
@@ -36,7 +36,7 @@ UICorner.Parent = MainFrame
 Title.Parent = MainFrame
 Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Text = "ELITE HUB V7 | ESP FIXED"
+Title.Text = "Roblos/scripts"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 16
 local TitleCorner = Instance.new("UICorner")
